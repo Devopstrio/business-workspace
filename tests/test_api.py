@@ -1,11 +1,10 @@
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
 
-from businessportal.main import app
 from businessportal.api.endpoints import get_engine
+from businessportal.main import app
 
 client = TestClient(app)
 
