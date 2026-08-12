@@ -66,4 +66,4 @@ class PostgresBizAdapter:
                 """,
                 decision, approver_id, reason, approval_id
             )
-            return result == "UPDATE 1"
+            return bool(result == "UPDATE 1")

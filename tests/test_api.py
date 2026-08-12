@@ -1,10 +1,11 @@
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
 
 from businessportal.main import app
+from businessportal.api.endpoints import get_engine
 
 client = TestClient(app)
 
@@ -13,12 +14,11 @@ def test_health_check() -> None:
     assert response.status_code == 200
 
 @pytest.mark.asyncio
-@patch("businessportal.api.endpoints.BizAnalyticsEngine")
-async def test_get_roi(mock_engine_class: Any) -> None:
-    mock_instance = mock_engine_class.return_value
+async def test_get_roi() -> None:
+    mock_instance = MagicMock()
     mock_instance.calculate_roi = AsyncMock(return_value=(500, 1500.5, "Excellent"))
     
-    app.dependency_overrides[mock_engine_class] = lambda: mock_instance
+    app.dependency_overrides[get_engine] = lambda: mock_instance
     
     response = client.get("/v1/biz/analytics/roi")
     assert response.status_code == 200
@@ -28,12 +28,11 @@ async def test_get_roi(mock_engine_class: Any) -> None:
     assert data["roi_status"] == "Excellent"
 
 @pytest.mark.asyncio
-@patch("businessportal.api.endpoints.BizAnalyticsEngine")
-async def test_process_approval(mock_engine_class: Any) -> None:
-    mock_instance = mock_engine_class.return_value
+async def test_process_approval() -> None:
+    mock_instance = MagicMock()
     mock_instance.resolve_hitl_approval = AsyncMock(return_value=True)
     
-    app.dependency_overrides[mock_engine_class] = lambda: mock_instance
+    app.dependency_overrides[get_engine] = lambda: mock_instance
     
     response = client.post("/v1/biz/approvals/app_123", json={
         "approver_id": "mgr-jane",
@@ -46,12 +45,11 @@ async def test_process_approval(mock_engine_class: Any) -> None:
     assert data["status"] == "Approve"
 
 @pytest.mark.asyncio
-@patch("businessportal.api.endpoints.BizAnalyticsEngine")
-async def test_process_approval_not_found(mock_engine_class: Any) -> None:
-    mock_instance = mock_engine_class.return_value
+async def test_process_approval_not_found() -> None:
+    mock_instance = MagicMock()
     mock_instance.resolve_hitl_approval = AsyncMock(return_value=False)
     
-    app.dependency_overrides[mock_engine_class] = lambda: mock_instance
+    app.dependency_overrides[get_engine] = lambda: mock_instance
     
     response = client.post("/v1/biz/approvals/app_999", json={
         "approver_id": "mgr-jane",
