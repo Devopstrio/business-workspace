@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  biz_db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: biz_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_biz_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  biz_portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - PG_DSN=postgresql://postgres:postgres@biz_db:5432/biz_db
+    depends_on:
+      biz_db:
+        condition: service_healthy
+
+volumes:
+  pg_biz_data:
